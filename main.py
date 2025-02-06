@@ -4,7 +4,7 @@ from crawl4ai import AsyncWebCrawler
 from dotenv import load_dotenv
 
 from config import BASE_URL, CSS_SELECTOR, REQUIRED_KEYS
-from models.price import DivGooglePrices
+from models.locations import Locations
 from utils.data_utils import (
     save_venues_to_csv,
 )
@@ -24,7 +24,7 @@ async def crawl_venues():
     # Initialize configurations
     browser_config = get_browser_config()
     llm_strategy = get_llm_strategy()
-    session_id = "price_crawl_session"
+    session_id = "locations_crawl_session"
 
     # Initialize state variables
     all_venues = []
@@ -45,7 +45,7 @@ async def crawl_venues():
         )
 
         if no_results_found or not venues:
-            print("No venues found.")
+            print("No locations found.")
             return
 
         # Add the venues to the total list

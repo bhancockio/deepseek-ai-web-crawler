@@ -12,7 +12,8 @@ from crawl4ai import (
 
 from models.venue import Venue
 from utils.data_utils import is_complete_venue, is_duplicate_venue
-from models.price import DivGooglePrices
+from models.locations import Locations
+
 
 
 def get_browser_config() -> BrowserConfig:
@@ -41,15 +42,17 @@ def get_llm_strategy() -> LLMExtractionStrategy:
     return LLMExtractionStrategy(
         provider="openai/gpt-4o-mini",  
         api_token=api_key,  
-        schema=DivGooglePrices.model_json_schema(),  
+        schema=Locations.model_json_schema(),  
         extraction_type="schema",  
         instruction=(
-            "Extraia os preços de ração Pedigree 10kg para raças pequenas nos resultados do Google. "
-            "Para cada card de preço, forneça: "
-            "- Nome do produto "
-            "- Preço "
-            "- Local/Loja "
-            "- Link do site "
+            "Extraia todos os locais na região "
+            "Para cada card de localização, forneça: "
+            "- Nome do local "
+            "- Avaliação "
+            "- Número de avaliações "
+            "- Endereço "
+            "- Horário de funcionamento "
+            "- Telefone "
             "Foque apenas nos resultados de comparação de preços."
         ),  
         input_format="markdown",  
