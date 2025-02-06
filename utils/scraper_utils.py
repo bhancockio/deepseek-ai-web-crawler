@@ -12,6 +12,8 @@ from crawl4ai import (
 
 from models.venue import Venue
 from utils.data_utils import is_complete_venue, is_duplicate_venue
+from models.locations import Locations
+
 
 
 def get_browser_config() -> BrowserConfig:
@@ -23,32 +25,38 @@ def get_browser_config() -> BrowserConfig:
     """
     # https://docs.crawl4ai.com/core/browser-crawler-config/
     return BrowserConfig(
-        browser_type="chromium",  # Type of browser to simulate
-        headless=False,  # Whether to run in headless mode (no GUI)
-        verbose=True,  # Enable verbose logging
+        browser_type="chromium",  
+        headless=False,  
+        verbose=True,  
     )
 
 
 def get_llm_strategy() -> LLMExtractionStrategy:
     """
-    Returns the configuration for the language model extraction strategy.
-
-    Returns:
-        LLMExtractionStrategy: The settings for how to extract data using LLM.
+    Retorna a configuração para a estratégia de extração do modelo de linguagem.
     """
-    # https://docs.crawl4ai.com/api/strategies/#llmextractionstrategy
+    api_key = os.getenv("OPENAI_API_KEY")
+    if not api_key:
+        raise ValueError("A chave de API da OpenAI não foi encontrada. Defina OPENAI_API_KEY no arquivo .env.")
+
     return LLMExtractionStrategy(
-        provider="groq/deepseek-r1-distill-llama-70b",  # Name of the LLM provider
-        api_token=os.getenv("GROQ_API_KEY"),  # API token for authentication
-        schema=Venue.model_json_schema(),  # JSON schema of the data model
-        extraction_type="schema",  # Type of extraction to perform
+        provider="openai/gpt-4o-mini",  
+        api_token=api_key,  
+        schema=Locations.model_json_schema(),  
+        extraction_type="schema",  
         instruction=(
-            "Extract all venue objects with 'name', 'location', 'price', 'capacity', "
-            "'rating', 'reviews', and a 1 sentence description of the venue from the "
-            "following content."
-        ),  # Instructions for the LLM
-        input_format="markdown",  # Format of the input content
-        verbose=True,  # Enable verbose logging
+            "Extraia todos os locais na região "
+            "Para cada card de localização, forneça: "
+            "- Nome do local "
+            "- Avaliação "
+            "- Número de avaliações "
+            "- Endereço "
+            "- Horário de funcionamento "
+            "- Telefone "
+            "Foque apenas nos resultados de comparação de preços."
+        ),  
+        input_format="markdown",  
+        verbose=True,  
     )
 
 
@@ -68,7 +76,6 @@ async def check_no_results(
     Returns:
         bool: True if "No Results Found" message is found, False otherwise.
     """
-    # Fetch the page without any CSS selector or extraction strategy
     result = await crawler.arun(
         url=url,
         config=CrawlerRunConfig(
